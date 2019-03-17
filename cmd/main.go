@@ -35,8 +35,10 @@ func main() {
 	var userRepository UserRepository = UserRepositoryImpl{db}
 	var userEndpoint UserEndpoint = UserEndpointImpl{userRepository}
 	
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/user/{name}", userEndpoint.GetUser).Methods("GET")
+	router := mux.NewRouter()
+	router.HandleFunc("/users/{name}", userEndpoint.GetUser).Methods("GET")
+	router.HandleFunc("/{users:users(?:\\/)?}", userEndpoint.GetUsers).Methods("GET")
+	router.HandleFunc("/{users:users(?:\\/)?}", userEndpoint.CreateUser).Methods("POST")
 	port := strconv.Itoa(config.ServerConfig.Port)
 	fmt.Println("Try run server on port:", port)
 	log.Fatal(http.ListenAndServe(":" + port, router))
