@@ -39,6 +39,8 @@ func main() {
     router.HandleFunc("/users/{name}", userEndpoint.GetUser).Methods("GET")
     router.HandleFunc("/{users:users(?:\\/)?}", userEndpoint.GetUsers).Methods("GET")
     router.HandleFunc("/{users:users(?:\\/)?}", userEndpoint.CreateUser).Methods("POST")
+    router.HandleFunc("/{users:users(?:\\/)?}", userEndpoint.UpdateUser).Methods("PUT")
+    router.HandleFunc("/users/{name}", userEndpoint.DeleteUser).Methods("DELETE")
     port := strconv.Itoa(config.ServerConfig.Port)
     fmt.Println("Try run server on port:", port)
     log.Fatal(http.ListenAndServe(":" + port, router))

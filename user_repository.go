@@ -11,8 +11,8 @@ type UserRepository interface {
     GetUser(name string) (User, error)
     GetUsers() ([]User, error)
     InsertUser(user *User) error
-    UpdateUser(user *User) error
-    DeleteUser(user *User) error
+    UpdateUser(user *User) (bool, error)
+    DeleteUser(name string) (bool, error)
 }
 
 type UserRepositoryImpl struct {
@@ -20,7 +20,7 @@ type UserRepositoryImpl struct {
 }
 
 func (ur UserRepositoryImpl) GetUser(name string) (User, error) {
-    sqlStatement := "SELECT name, age, last_updatetime FROM users WHERE name = $1"
+    sqlStatement := `SELECT name, age, last_updatetime FROM users WHERE name = $1`
 
     var user User
 
@@ -73,25 +73,36 @@ func (ur UserRepositoryImpl) InsertUser(user *User) error {
     if err != nil {
         return fmt.Errorf("Error while execute InsertUser query %s, error %s", sqlStatement, err)
     }
+    log.Println("InsertUser query:", sqlStatement, "user:", *user)
     return nil
 }
 
-func (ur UserRepositoryImpl) UpdateUser(user *User) error {
+func (ur UserRepositoryImpl) UpdateUser(user *User) (bool, error) {
     sqlStatement := `UPDATE users SET age = $2, last_updatetime = $3 WHERE name = $1`
 
-    _, err := ur.db.Exec(sqlStatement, user.Name, user.Age, user.LastUpdatetime)
+    result, err := ur.db.Exec(sqlStatement, user.Name, user.Age, user.LastUpdatetime)
     if err != nil {
-        return fmt.Errorf("Error while execute UpdateUser query %s, error %s", sqlStatement, err)
+        return false, fmt.Errorf("Error while execute UpdateUser query %s, error %s", sqlStatement, err)
     }
-    return nil
+    rows, err := result.RowsAffected()
+    if err != nil {
+        return false, fmt.Errorf("Error while execute DeleteUser query %s, RowsAffected, error %s", sqlStatement, err)
+    }
+    log.Println("UpdateUser query:", sqlStatement, "user:", *user,"updated rows:", rows)
+    return rows > 0, nil
 }
 
-func (ur UserRepositoryImpl) DeleteUser(user *User) error {
+func (ur UserRepositoryImpl) DeleteUser(name string) (bool, error) {
     sqlStatement := `DELETE FROM users WHERE name = $1`
 
-    _, err := ur.db.Exec(sqlStatement, user.Name)
+    result, err := ur.db.Exec(sqlStatement, name)
     if err != nil {
-        return fmt.Errorf("Error while execute DeleteUser query %s, error %s", sqlStatement, err)
+        return false, fmt.Errorf("Error while execute DeleteUser query %s, error %s", sqlStatement, err)
     }
-    return nil
+    rows, err := result.RowsAffected()
+    if err != nil {
+        return false, fmt.Errorf("Error while execute DeleteUser query %s, RowsAffected, error %s", sqlStatement, err)
+    }
+    log.Println("DeleteUser query:", sqlStatement, "name", name, "deleted rows:", rows)
+    return rows > 0, nil
 }
