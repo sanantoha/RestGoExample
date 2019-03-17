@@ -1,97 +1,97 @@
 package main
 
 import (
-	"log"
-	"fmt"
-	"database/sql"
-	_ "github.com/lib/pq"
+    "log"
+    "fmt"
+    "database/sql"
+    _ "github.com/lib/pq"
 )
 
 type UserRepository interface {
-	GetUser(name string) (User, error)
-	GetUsers() ([]User, error)
-	InsertUser(user *User) error
-	UpdateUser(user *User) error
-	DeleteUser(user *User) error
+    GetUser(name string) (User, error)
+    GetUsers() ([]User, error)
+    InsertUser(user *User) error
+    UpdateUser(user *User) error
+    DeleteUser(user *User) error
 }
 
 type UserRepositoryImpl struct {
-	db *sql.DB
+    db *sql.DB
 }
 
 func (ur UserRepositoryImpl) GetUser(name string) (User, error) {
-	sqlStatement := "SELECT name, age, last_updatetime FROM users WHERE name = $1"
+    sqlStatement := "SELECT name, age, last_updatetime FROM users WHERE name = $1"
 
-	var user User
+    var user User
 
-	row := ur.db.QueryRow(sqlStatement, name)
-	err := row.Scan(&user.Name, &user.Age, &user.LastUpdatetime)
+    row := ur.db.QueryRow(sqlStatement, name)
+    err := row.Scan(&user.Name, &user.Age, &user.LastUpdatetime)
 
-	log.Println("qeury:", sqlStatement, "with params:", name, "return", user)
+    log.Println("qeury:", sqlStatement, "with params:", name, "return", user)
 
-	switch err {
-		case sql.ErrNoRows:
-			log.Println("No rows were returned!")
-			return user, fmt.Errorf("No rows were returned!")
-		case nil:
-			return user, nil
-		default:
-			return user, fmt.Errorf("Error while execute GetUser query: %s, %s", sqlStatement, err)
-	}
+    switch err {
+        case sql.ErrNoRows:
+            log.Println("No rows were returned!")
+            return user, fmt.Errorf("No rows were returned!")
+        case nil:
+            return user, nil
+        default:
+            return user, fmt.Errorf("Error while execute GetUser query: %s, %s", sqlStatement, err)
+    }
 }
 
 func (ur UserRepositoryImpl) GetUsers() ([]User, error) {
-	sqlStatement := `SELECT name, age, last_updatetime FROM users`	
+    sqlStatement := `SELECT name, age, last_updatetime FROM users`  
 
-	rows, err := ur.db.Query(sqlStatement)
-	if err != nil {
-		return nil, fmt.Errorf("Error while execute GetUsers query: %s, %s", sqlStatement, err)
-	}
+    rows, err := ur.db.Query(sqlStatement)
+    if err != nil {
+        return nil, fmt.Errorf("Error while execute GetUsers query: %s, %s", sqlStatement, err)
+    }
 
-	var users []User
-	for rows.Next() {
-		var user User
-		err := rows.Scan(&user.Name, &user.Age, &user.LastUpdatetime)
-		if err != nil {
-			return nil, fmt.Errorf("Error while execute GetUsers query: %s and fetching data %s", sqlStatement, err)
-		}
-		users = append(users, user)		
-	}
-	err = rows.Err()
-	if err != nil {
-		return nil, fmt.Errorf("Error while execute GetUsers query: %s and encounter during iteration %s", sqlStatement, err)
-	}
+    var users []User
+    for rows.Next() {
+        var user User
+        err := rows.Scan(&user.Name, &user.Age, &user.LastUpdatetime)
+        if err != nil {
+            return nil, fmt.Errorf("Error while execute GetUsers query: %s and fetching data %s", sqlStatement, err)
+        }
+        users = append(users, user)     
+    }
+    err = rows.Err()
+    if err != nil {
+        return nil, fmt.Errorf("Error while execute GetUsers query: %s and encounter during iteration %s", sqlStatement, err)
+    }
 
-	log.Println("GetUsers qeury:", sqlStatement, "return", users)
-	return users, nil
+    log.Println("GetUsers qeury:", sqlStatement, "return", users)
+    return users, nil
 }
 
 func (ur UserRepositoryImpl) InsertUser(user *User) error {
-	sqlStatement := `INSERT INTO users (name, age, last_updatetime) VALUES ($1, $2, $3)`
+    sqlStatement := `INSERT INTO users (name, age, last_updatetime) VALUES ($1, $2, $3)`
 
-	_, err := ur.db.Exec(sqlStatement, user.Name, user.Age, user.LastUpdatetime)
-	if err != nil {
-		return fmt.Errorf("Error while execute InsertUser query %s, error %s", sqlStatement, err)
-	}
-	return nil
+    _, err := ur.db.Exec(sqlStatement, user.Name, user.Age, user.LastUpdatetime)
+    if err != nil {
+        return fmt.Errorf("Error while execute InsertUser query %s, error %s", sqlStatement, err)
+    }
+    return nil
 }
 
 func (ur UserRepositoryImpl) UpdateUser(user *User) error {
-	sqlStatement := `UPDATE users SET age = $2, last_updatetime = $3 WHERE name = $1`
+    sqlStatement := `UPDATE users SET age = $2, last_updatetime = $3 WHERE name = $1`
 
-	_, err := ur.db.Exec(sqlStatement, user.Name, user.Age, user.LastUpdatetime)
-	if err != nil {
-		return fmt.Errorf("Error while execute UpdateUser query %s, error %s", sqlStatement, err)
-	}
-	return nil
+    _, err := ur.db.Exec(sqlStatement, user.Name, user.Age, user.LastUpdatetime)
+    if err != nil {
+        return fmt.Errorf("Error while execute UpdateUser query %s, error %s", sqlStatement, err)
+    }
+    return nil
 }
 
 func (ur UserRepositoryImpl) DeleteUser(user *User) error {
-	sqlStatement := `DELETE FROM users WHERE name = $1`
+    sqlStatement := `DELETE FROM users WHERE name = $1`
 
-	_, err := ur.db.Exec(sqlStatement, user.Name)
-	if err != nil {
-		return fmt.Errorf("Error while execute DeleteUser query %s, error %s", sqlStatement, err)
-	}
-	return nil
+    _, err := ur.db.Exec(sqlStatement, user.Name)
+    if err != nil {
+        return fmt.Errorf("Error while execute DeleteUser query %s, error %s", sqlStatement, err)
+    }
+    return nil
 }
