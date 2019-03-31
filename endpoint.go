@@ -20,7 +20,7 @@ type UserEndpointImpl struct {
     UserRepository UserRepository
 }
 
-func (ue UserEndpointImpl) GetUser(w http.ResponseWriter, r *http.Request) {
+func (ue *UserEndpointImpl) GetUser(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     log.Println("GetUser request with params:", params)
 
@@ -37,7 +37,7 @@ func (ue UserEndpointImpl) GetUser(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(user) 
 }
 
-func (ue UserEndpointImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
+func (ue *UserEndpointImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
     users, err := ue.UserRepository.GetUsers()
     if err != nil {
         log.Println(err)
@@ -46,7 +46,7 @@ func (ue UserEndpointImpl) GetUsers(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(users)
 }
 
-func (ue UserEndpointImpl) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (ue *UserEndpointImpl) CreateUser(w http.ResponseWriter, r *http.Request) {
     var user User
     _ = json.NewDecoder(r.Body).Decode(&user)
 
@@ -58,7 +58,7 @@ func (ue UserEndpointImpl) CreateUser(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(user)
 }
 
-func (ue UserEndpointImpl) UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (ue *UserEndpointImpl) UpdateUser(w http.ResponseWriter, r *http.Request) {
     var user User
     _ = json.NewDecoder(r.Body).Decode(&user)
 
@@ -74,7 +74,7 @@ func (ue UserEndpointImpl) UpdateUser(w http.ResponseWriter, r *http.Request) {
     }    
 }
 
-func (ue UserEndpointImpl) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (ue *UserEndpointImpl) DeleteUser(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
     log.Println("DeleteUser request with params:", params)
 
